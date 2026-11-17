@@ -69,8 +69,23 @@ This guide provides step-by-step instructions to deploy the **HelpConnect NGO Do
   - `CLIENT_URL=https://your-frontend.vercel.app`
   - `TRUST_PROXY=1`
 
-### 2. Frontend Deployment ([Vercel](https://vercel.com))
-- Import your repository into Vercel.
+### 2. Frontend Deployment (Render Static Site / Vercel)
+
+#### If deploying on Render Static Site (e.g. `helpconnect-frontend.onrender.com`):
+- **Service Type:** Static Site
+- **Root Directory:** `frontend`
+- **Build Command:** `npm run build`
+- **Publish Directory:** `dist`
+- **Single Page Application (SPA) Rewrite (REQUIRED to avoid 404 on refresh):**
+  1. In the Render Dashboard, open your static site (**HelpConnect-Frontend**).
+  2. In the left navigation menu, click **Redirects/Rewrites**.
+  3. Click **Add Rule** and enter:
+     - **Type:** `Rewrite`
+     - **Source:** `/*`
+     - **Destination:** `/index.html`
+  4. Click **Save Changes**.
+
+#### If deploying on Vercel:
 - **Root Directory:** `frontend`
 - **Framework Preset:** Vite
 - **Build Command:** `npm run build`
