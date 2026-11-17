@@ -5,6 +5,7 @@ import {
     getMe,
     updateUserProfile,
     googleAuth,
+    getGoogleClientId,
     deleteMyProfile,
     sendEmailVerificationOtp,
     verifyEmailOtp
@@ -18,6 +19,7 @@ const router = express.Router();
 router.post('/register', registerRateLimiter, registerValidationRules, registerUser);
 router.post('/login', loginRateLimiter, loginValidationRules, loginUser);
 router.post('/google', loginRateLimiter, googleAuth);
+router.get('/google/client-id', getGoogleClientId);
 router.get('/me', protect, getMe);
 router.put('/profile', protect, updateUserProfile);
 router.delete('/profile', protect, deleteMyProfile);

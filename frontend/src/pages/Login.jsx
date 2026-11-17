@@ -2,6 +2,7 @@ import { useState, useContext, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { AgentAuthContext } from '../context/AgentAuthContext';
+import API from '../services/api';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -15,6 +16,7 @@ function Login() {
     const [submitting, setSubmitting] = useState(false);
     const [showNotFoundModal, setShowNotFoundModal] = useState(false);
     const [notFoundRole, setNotFoundRole] = useState('user');
+    const [activeGoogleClientId, setActiveGoogleClientId] = useState(GOOGLE_CLIENT_ID || '');
 
     const googleBtnRef = useRef(null);
 
@@ -115,12 +117,24 @@ function Login() {
     };
 
     useEffect(() => {
-        if (!GOOGLE_CLIENT_ID || loginRole !== 'user') return;
+        // Fetch server's configured Google Client ID to ensure zero mismatch
+        API.get('/auth/google/client-id')
+            .then((res) => {
+                if (res.data?.clientId) {
+                    setActiveGoogleClientId(res.data.clientId);
+                }
+            })
+            .catch(() => {});
+    }, []);
+
+    useEffect(() => {
+        const clientIdToUse = activeGoogleClientId || GOOGLE_CLIENT_ID;
+        if (!clientIdToUse || loginRole !== 'user') return;
 
         const initGoogle = () => {
             if (window.google?.accounts?.id && googleBtnRef.current) {
                 window.google.accounts.id.initialize({
-                    client_id: GOOGLE_CLIENT_ID,
+                    client_id: clientIdToUse,
                     callback: handleGoogleResponse
                 });
                 window.google.accounts.id.renderButton(googleBtnRef.current, {
@@ -145,7 +159,7 @@ function Login() {
             }, 200);
             return () => clearInterval(interval);
         }
-    }, [handleGoogleResponse, loginRole]);
+    }, [activeGoogleClientId, handleGoogleResponse, loginRole]);
 
     return (
         <div className="max-w-md mx-auto my-14 px-6">
@@ -255,7 +269,7 @@ function Login() {
                             <div ref={googleBtnRef}></div>
                         </div>
 
-                        {!GOOGLE_CLIENT_ID && (
+                        {!activeGoogleClientId && !GOOGLE_CLIENT_ID && (
                             <p className="text-center text-xs text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200 mt-3">
                                 Google Client ID is not configured.
                             </p>

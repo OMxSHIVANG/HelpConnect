@@ -23,6 +23,7 @@ function Register() {
     const [registeredEmail, setRegisteredEmail] = useState('');
     const [registeredRole, setRegisteredRole] = useState('user');
     const [resendCooldown, setResendCooldown] = useState(0);
+    const [activeGoogleClientId, setActiveGoogleClientId] = useState(GOOGLE_CLIENT_ID || '');
 
     const googleBtnRef = useRef(null);
     const roleRef = useRef(role);
@@ -168,12 +169,24 @@ function Register() {
     };
 
     useEffect(() => {
-        if (!GOOGLE_CLIENT_ID || role === 'agent' || step !== 'form') return;
+        // Fetch server's configured Google Client ID to ensure zero mismatch
+        API.get('/auth/google/client-id')
+            .then((res) => {
+                if (res.data?.clientId) {
+                    setActiveGoogleClientId(res.data.clientId);
+                }
+            })
+            .catch(() => {});
+    }, []);
+
+    useEffect(() => {
+        const clientIdToUse = activeGoogleClientId || GOOGLE_CLIENT_ID;
+        if (!clientIdToUse || role === 'agent' || step !== 'form') return;
 
         const initGoogle = () => {
             if (window.google?.accounts?.id && googleBtnRef.current) {
                 window.google.accounts.id.initialize({
-                    client_id: GOOGLE_CLIENT_ID,
+                    client_id: clientIdToUse,
                     callback: handleGoogleResponse
                 });
                 window.google.accounts.id.renderButton(googleBtnRef.current, {
@@ -198,7 +211,7 @@ function Register() {
             }, 200);
             return () => clearInterval(interval);
         }
-    }, [handleGoogleResponse, role, step]);
+    }, [activeGoogleClientId, handleGoogleResponse, role, step]);
 
     return (
         <div className="max-w-lg mx-auto my-10 px-6">
@@ -409,7 +422,7 @@ function Register() {
                                     <div ref={googleBtnRef}></div>
                                 </div>
 
-                                {!GOOGLE_CLIENT_ID && (
+                                {!activeGoogleClientId && !GOOGLE_CLIENT_ID && (
                                     <p className="text-center text-xs text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200 mt-3">
                                         Google Client ID is not configured.
                                     </p>

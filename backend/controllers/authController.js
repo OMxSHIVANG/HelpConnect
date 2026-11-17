@@ -13,10 +13,25 @@ import { sendEmail } from '../utils/emailService.js';
 
 let googleClient = null;
 const getGoogleClient = () => {
-    if (!googleClient && process.env.GOOGLE_CLIENT_ID) {
-        googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID.trim());
+    if (!googleClient) {
+        googleClient = new OAuth2Client();
     }
     return googleClient;
+};
+
+// @desc    Get Google OAuth Client ID for frontend synchronization
+// @route   GET /api/auth/google/client-id
+// @access  Public
+export const getGoogleClientId = (req, res) => {
+    const rawClientIds = [
+        process.env.GOOGLE_CLIENT_ID,
+        process.env.VITE_GOOGLE_CLIENT_ID
+    ].filter(Boolean).flatMap(id => id.split(',').map(s => s.trim())).filter(Boolean);
+
+    res.json({
+        success: true,
+        clientId: rawClientIds[0] || ''
+    });
 };
 
 // @desc    Register new user or NGO user (Public)
@@ -209,16 +224,29 @@ export const googleAuth = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Google credential is required' });
         }
 
-        const clientId = process.env.GOOGLE_CLIENT_ID;
-        if (!clientId) {
+        const rawClientIds = [
+            process.env.GOOGLE_CLIENT_ID,
+            process.env.VITE_GOOGLE_CLIENT_ID
+        ].filter(Boolean).flatMap(id => id.split(',').map(s => s.trim())).filter(Boolean);
+
+        if (rawClientIds.length === 0) {
             return res.status(500).json({ success: false, message: 'Google OAuth is not configured on the server' });
         }
 
         const client = getGoogleClient();
-        const ticket = await client.verifyIdToken({
-            idToken: credential,
-            audience: clientId
-        });
+        let ticket;
+        try {
+            ticket = await client.verifyIdToken({
+                idToken: credential,
+                audience: rawClientIds.length === 1 ? rawClientIds[0] : rawClientIds
+            });
+        } catch (authErr) {
+            console.error('Google token verification error:', authErr.message);
+            return res.status(401).json({
+                success: false,
+                message: `Google authentication failed: ${authErr.message}. Ensure GOOGLE_CLIENT_ID on server matches the Client ID used by the client.`
+            });
+        }
 
         const payload = ticket.getPayload();
         if (!payload || !payload.email) {
