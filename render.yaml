@@ -4,13 +4,14 @@ services:
     env: node
     region: singapore
     plan: free
-    buildCommand: npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend
+    buildCommand: npm install --prefix backend && npm install --prefix frontend --include=dev && npm run build --prefix frontend
     startCommand: NODE_ENV=production SERVE_FRONTEND=true npm start --prefix backend
+    autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 10000
+        value: "10000"
       - key: SERVE_FRONTEND
         value: "true"
       - key: TRUST_PROXY
@@ -36,7 +37,7 @@ services:
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT
-        value: 587
+        value: "587"
       - key: SMTP_USER
         sync: false
       - key: SMTP_PASS

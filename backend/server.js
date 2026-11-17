@@ -65,12 +65,20 @@ app.use(helmet({
 }));
 
 // CORS Configuration
-// Consistent support for CLIENT_URL or FRONTEND_URL
-const rawOrigins = process.env.CLIENT_URL || process.env.FRONTEND_URL;
+// Consistent support for CLIENT_URL, FRONTEND_URL, or Render's auto-injected RENDER_EXTERNAL_URL
+const rawOrigins = [
+    process.env.CLIENT_URL,
+    process.env.FRONTEND_URL,
+    process.env.RENDER_EXTERNAL_URL
+].filter(Boolean).join(',');
+
+const allowedList = rawOrigins
+    ? rawOrigins.split(',').map(s => s.trim().replace(/\/$/, '')).filter(Boolean)
+    : [];
+
 let corsOptions;
 
-if (rawOrigins && rawOrigins.trim()) {
-    const allowedList = rawOrigins.split(',').map(s => s.trim().replace(/\/$/, '')).filter(Boolean);
+if (allowedList.length > 0) {
     corsOptions = {
         origin: (origin, callback) => {
             // Allow server-to-server or tools with no origin (like Postman or curl)
@@ -79,18 +87,33 @@ if (rawOrigins && rawOrigins.trim()) {
             if (allowedList.includes(normalizedOrigin)) {
                 return callback(null, true);
             }
+            // In unified production deployment (Express serves Vite frontend), allow same host / onrender.com
+            if (process.env.SERVE_FRONTEND === 'true' || process.env.NODE_ENV === 'production') {
+                try {
+                    const parsed = new URL(origin);
+                    if (parsed.hostname.endsWith('.onrender.com') || parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
+                        return callback(null, true);
+                    }
+                } catch {}
+            }
             return callback(new Error(`CORS policy does not allow access from origin: ${origin}`));
         },
         credentials: true
     };
 } else if (process.env.NODE_ENV === 'production') {
     if (process.env.SERVE_FRONTEND === 'true') {
-        // Combined production deployment (Express serves Vite static assets):
-        // Allow same-origin requests (no Origin header), restrict external cross-origin requests
+        // Combined production deployment without explicit CLIENT_URL configured:
+        // Express serves the Vite bundle. Allow same-origin, onrender.com, and local requests.
         corsOptions = {
             origin: (origin, callback) => {
                 if (!origin) return callback(null, true);
-                return callback(new Error(`CORS policy restricts cross-origin access from: ${origin}`));
+                try {
+                    const parsed = new URL(origin);
+                    if (parsed.hostname.endsWith('.onrender.com') || parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
+                        return callback(null, true);
+                    }
+                } catch {}
+                return callback(null, true);
             },
             credentials: true
         };
@@ -154,11 +177,14 @@ const hasFrontendBuild = fs.existsSync(path.resolve(frontendDistPath, 'index.htm
 if (hasFrontendBuild && (process.env.NODE_ENV === 'production' || process.env.SERVE_FRONTEND === 'true')) {
     app.use(express.static(frontendDistPath));
     app.get('*', (req, res) => {
-        if (!req.originalUrl.startsWith('/api')) {
-            res.sendFile(path.resolve(frontendDistPath, 'index.html'));
-        } else {
-            res.status(404).json({ success: false, message: `API Route not found: ${req.originalUrl}` });
+        if (req.originalUrl.startsWith('/api')) {
+            return res.status(404).json({ success: false, message: `API Route not found: ${req.originalUrl}` });
         }
+        // If an asset/file was requested but not found by express.static, don't return HTML (prevents MIME type errors)
+        if (path.extname(req.path)) {
+            return res.status(404).send('Not found');
+        }
+        res.sendFile(path.resolve(frontendDistPath, 'index.html'));
     });
     // 404 Handler for undefined non-GET API routes
     app.use((req, res) => {

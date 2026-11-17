@@ -106,7 +106,7 @@ export const validateEnv = () => {
     }
 
     // 6. CORS origin resolution
-    const clientUrl = process.env.CLIENT_URL || process.env.FRONTEND_URL;
+    const clientUrl = process.env.CLIENT_URL || process.env.FRONTEND_URL || process.env.RENDER_EXTERNAL_URL;
     if (isProduction && !clientUrl && process.env.SERVE_FRONTEND !== 'true') {
         console.warn('⚠️ Warning: CLIENT_URL / FRONTEND_URL is not set in decoupled production deployment. Cross-origin requests will be restricted.');
     }
