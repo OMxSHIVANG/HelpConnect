@@ -113,7 +113,7 @@ export const validateEnv = () => {
 
     // 8. Multi-instance Production Redis Advisory
     if (isProduction && !process.env.REDIS_URL && !process.env.REDIS_HOST) {
-        console.warn('⚠️ Advisory: REDIS_URL is not set. Distributed rate limiting across multiple server instances requires Redis.');
+        console.log('ℹ️ [Info] Single-instance mode active: Built-in in-memory rate limiting is enabled. (REDIS_URL is optional, required only for multi-instance scaling).');
     }
 
     // Halt startup immediately if any fatal configuration errors are found

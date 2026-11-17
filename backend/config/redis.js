@@ -252,9 +252,6 @@ export const initRedis = () => {
     const { valid, configured, config } = validateRedisConfig();
 
     if (!configured) {
-        if (process.env.NODE_ENV === 'production') {
-            console.warn('⚠️ [REDIS ADVISORY] No REDIS_URL or REDIS_HOST set in production. Rate limiting is using memory fallback. Configure REDIS_URL for distributed deployments.');
-        }
         return null;
     }
 
