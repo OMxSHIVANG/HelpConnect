@@ -18,6 +18,17 @@ export default defineConfig({
     }
   },
   build: {
-    chunkSizeWarningLimit: 1000
+    chunkSizeWarningLimit: 1600,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('leaflet')) return 'leaflet';
+            if (id.includes('socket.io-client')) return 'socket';
+            return 'vendor';
+          }
+        }
+      }
+    }
   }
 })
