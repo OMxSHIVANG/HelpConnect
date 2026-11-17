@@ -40,7 +40,7 @@ router.post('/:id/confirm-collection', protectAgent, otpVerificationRateLimiter,
 router.post('/:id/confirm-delivery', protect, authorize('ngo', 'admin'), validateObjectId('id'), confirmDelivery);
 router.get('/:id/live-tracking', protectUserOrAgent, validateObjectId('id'), getLiveTrackingData);
 router.get('/:id', protect, validateObjectId('id'), getDonationById);
-router.get('/:id/timeline', protect, validateObjectId('id'), getDonationTimeline);
+router.get('/:id/timeline', protectUserOrAgent, validateObjectId('id'), getDonationTimeline);
 router.get('/:id/receipt', protect, validateObjectId('id'), getDonationReceipt);
 router.put('/:id/status', protect, validateObjectId('id'), updateDonationStatus);
 router.put('/:id/cancel', protect, validateObjectId('id'), cancelDonation);

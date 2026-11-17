@@ -504,12 +504,18 @@ export const getDonationTimeline = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Donation not found' });
         }
 
-        const isOwnerDonor = donation.donor?._id?.toString() === req.user._id.toString();
-        const ngo = await NGO.findOne({ user: req.user._id });
-        const isRecipientNGO = ngo && donation.ngo?._id?.toString() === ngo._id.toString();
-        const isAdmin = req.user.role === 'admin';
+        const isOwnerDonor = Boolean(req.user && donation.donor?._id?.toString() === req.user._id.toString());
+        const ngo = req.user ? await NGO.findOne({ user: req.user._id }) : null;
+        const isRecipientNGO = Boolean(ngo && donation.ngo?._id?.toString() === ngo._id.toString());
+        const isAdmin = Boolean(req.user && req.user.role === 'admin');
+        const isAssignedAgent = Boolean(
+            req.agent && (
+                donation.assignedAgent?._id?.toString() === req.agent._id.toString() ||
+                donation.assignedAgentId === req.agent.agentId
+            )
+        );
 
-        if (!isOwnerDonor && !isRecipientNGO && !isAdmin) {
+        if (!isOwnerDonor && !isRecipientNGO && !isAdmin && !isAssignedAgent) {
             return res.status(403).json({ success: false, message: 'Not authorized to view this donation timeline' });
         }
 

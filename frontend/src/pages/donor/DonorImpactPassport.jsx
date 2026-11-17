@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import API from '../../services/api';
 import ProfilePhotoModal from '../../components/ProfilePhotoModal';
 
@@ -340,12 +341,12 @@ export default function DonorImpactPassport() {
                   </p>
                 </div>
 
-                <a
-                  href={`/donation/${item.id}/tracking`}
+                <Link
+                  to={`/donation/${item.id}/tracking`}
                   className="text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition self-start sm:self-auto no-underline"
                 >
                   View Audit & Receipt →
-                </a>
+                </Link>
               </div>
             ))}
           </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import API from '../../services/api';
 
 const TIME_SLOTS = [
@@ -170,12 +171,13 @@ export default function DonorPickups() {
                 >
                   {d.scheduledPickupDate ? '📅 Reschedule Slot' : '📅 Book Pickup Slot'}
                 </button>
-                <a
-                  href={`/donation/${d._id}/tracking`}
-                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs px-3 py-2.5 rounded-xl transition no-underline"
+                <Link
+                  to={`/donation/${d._id}/tracking`}
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs px-3 py-2.5 rounded-xl transition no-underline flex items-center justify-center gap-1"
                 >
-                  Journey →
-                </a>
+                  <span>Journey</span>
+                  <span>→</span>
+                </Link>
               </div>
             </div>
           ))}

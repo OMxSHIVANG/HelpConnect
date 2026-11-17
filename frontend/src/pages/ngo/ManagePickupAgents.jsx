@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import API from '../../services/api';
 import ProfilePhotoModal from '../../components/ProfilePhotoModal';
 
@@ -704,22 +705,18 @@ export default function ManagePickupAgents() {
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 justify-end">
-                        <a
-                          href={`/donation/${order._id}/tracking`}
-                          target="_blank"
-                          rel="noreferrer"
+                        <Link
+                          to={`/donation/${order._id}/tracking`}
                           className="text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded hover:bg-blue-100 no-underline"
                         >
                           🗺️ Live Route
-                        </a>
-                        <a
-                          href={`/pickup/agent/${order._id}`}
-                          target="_blank"
-                          rel="noreferrer"
+                        </Link>
+                        <Link
+                          to={`/pickup/agent/${order._id}`}
                           className="text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded hover:bg-emerald-100 no-underline"
                         >
                           📱 Agent GPS
-                        </a>
+                        </Link>
                       </div>
                       <p className="text-[10px] text-slate-400 font-mono">
                         Ref: {order._id.slice(-6).toUpperCase()}

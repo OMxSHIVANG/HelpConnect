@@ -233,12 +233,29 @@ export default function DonationTracking() {
   }
 
   if (error || !data) {
+    const isAuthError = typeof error === 'string' && (error.toLowerCase().includes('not authorized') || error.toLowerCase().includes('token') || error.toLowerCase().includes('session'));
     return (
-      <div className="max-w-md mx-auto my-20 p-6 bg-red-50 text-red-700 rounded-2xl border border-red-200 text-center">
-        <p className="font-bold">{error || 'Donation not found'}</p>
-        <Link to="/donor/donations" className="mt-4 inline-block text-xs font-semibold text-emerald-700 underline">
-          ← Return to My Donations
-        </Link>
+      <div className="max-w-md mx-auto my-20 p-6 bg-red-50 text-red-700 rounded-3xl border border-red-200 text-center space-y-3">
+        <p className="font-extrabold text-sm">{error || 'Donation journey not found'}</p>
+        <p className="text-xs text-red-600">
+          {isAuthError
+            ? 'Please ensure you are logged into the account associated with this donation.'
+            : 'The requested donation record could not be found or has been archived.'}
+        </p>
+        <div className="pt-2 flex items-center justify-center gap-3">
+          {isAuthError ? (
+            <Link to="/login" className="text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl transition no-underline">
+              Log In to Continue
+            </Link>
+          ) : (
+            <Link to="/donor/pickups" className="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 px-3.5 py-2 rounded-xl transition no-underline">
+              ← Return to Pickups
+            </Link>
+          )}
+          <Link to="/donor/donations" className="text-xs font-semibold text-emerald-700 underline">
+            My Donations
+          </Link>
+        </div>
       </div>
     );
   }

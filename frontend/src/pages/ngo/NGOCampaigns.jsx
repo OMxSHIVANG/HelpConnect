@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import API from '../../services/api';
 
 const CATEGORIES = ['Clothes', 'Books', 'Food', 'Medicine', 'School Supplies', 'Emergency Relief', 'General'];
@@ -192,14 +193,12 @@ export default function NGOCampaigns() {
                 </div>
 
                 <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
-                  <a
-                    href={`/campaigns/${c._id}`}
-                    target="_blank"
-                    rel="noreferrer"
+                  <Link
+                    to={`/campaigns/${c._id}`}
                     className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-2.5 rounded-xl text-center no-underline transition"
                   >
                     Public Page ↗
-                  </a>
+                  </Link>
 
                   {!isCompleted && (
                     <button

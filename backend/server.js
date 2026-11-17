@@ -76,6 +76,18 @@ const allowedList = rawOrigins
     ? rawOrigins.split(',').map(s => s.trim().replace(/\/$/, '')).filter(Boolean)
     : [];
 
+// Detect frontend build directory across root, backend, and Docker environments
+const candidateDistPaths = [
+    path.resolve(__dirname, '../frontend/dist'),
+    path.resolve(process.cwd(), 'frontend/dist'),
+    path.resolve(process.cwd(), 'dist'),
+    path.resolve(__dirname, 'dist')
+];
+const resolvedFrontendDistPath = candidateDistPaths.find(candidate =>
+    fs.existsSync(path.resolve(candidate, 'index.html'))
+);
+const shouldServeFrontend = Boolean(resolvedFrontendDistPath) && process.env.SERVE_FRONTEND !== 'false';
+
 let corsOptions;
 
 if (allowedList.length > 0) {
@@ -87,8 +99,8 @@ if (allowedList.length > 0) {
             if (allowedList.includes(normalizedOrigin)) {
                 return callback(null, true);
             }
-            // In unified production deployment (Express serves Vite frontend), allow same host / onrender.com
-            if (process.env.SERVE_FRONTEND === 'true' || process.env.NODE_ENV === 'production') {
+            // In unified deployment (Express serves Vite frontend), allow same host / onrender.com
+            if (shouldServeFrontend || process.env.SERVE_FRONTEND === 'true' || process.env.NODE_ENV === 'production') {
                 try {
                     const parsed = new URL(origin);
                     if (parsed.hostname.endsWith('.onrender.com') || parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
@@ -100,8 +112,8 @@ if (allowedList.length > 0) {
         },
         credentials: true
     };
-} else if (process.env.NODE_ENV === 'production') {
-    if (process.env.SERVE_FRONTEND === 'true') {
+} else if (process.env.NODE_ENV === 'production' || shouldServeFrontend) {
+    if (shouldServeFrontend || process.env.SERVE_FRONTEND === 'true') {
         // Combined production deployment without explicit CLIENT_URL configured:
         // Express serves the Vite bundle. Allow same-origin, onrender.com, and local requests.
         corsOptions = {
@@ -170,21 +182,22 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/chat', chatRoutes);
 
-// Serve static frontend in production if configured and built
-const frontendDistPath = path.resolve(__dirname, '../frontend/dist');
-const hasFrontendBuild = fs.existsSync(path.resolve(frontendDistPath, 'index.html'));
-
-if (hasFrontendBuild && (process.env.NODE_ENV === 'production' || process.env.SERVE_FRONTEND === 'true')) {
-    app.use(express.static(frontendDistPath));
+// Serve static frontend if built and not disabled
+if (shouldServeFrontend) {
+    app.use(express.static(resolvedFrontendDistPath));
     app.get('*', (req, res) => {
         if (req.originalUrl.startsWith('/api')) {
             return res.status(404).json({ success: false, message: `API Route not found: ${req.originalUrl}` });
         }
-        // If an asset/file was requested but not found by express.static, don't return HTML (prevents MIME type errors)
-        if (path.extname(req.path)) {
-            return res.status(404).send('Not found');
+        // Only return 404 for missing static assets (images, styles, scripts, fonts)
+        if (/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|map|json|webp|avif)$/i.test(req.path)) {
+            return res.status(404).type('text/plain').send('Asset not found');
         }
-        res.sendFile(path.resolve(frontendDistPath, 'index.html'));
+        res.sendFile(path.resolve(resolvedFrontendDistPath, 'index.html'), (err) => {
+            if (err && !res.headersSent) {
+                res.status(500).send('Error loading page');
+            }
+        });
     });
     // 404 Handler for undefined non-GET API routes
     app.use((req, res) => {
