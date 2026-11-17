@@ -17,8 +17,7 @@
     "start": "npm start --prefix backend",
     "start:backend": "npm start --prefix backend",
     "start:frontend": "npm run dev --prefix frontend",
-    "seed": "npm run seed --prefix backend",
-    "clean-seed": "npm run clean-seed --prefix backend",
+    "seed": "npm run reset-and-seed --prefix backend",
     "clear-data": "npm run clear-data --prefix backend",
     "reset-and-seed": "npm run reset-and-seed --prefix backend",
     "create-admin": "npm run create-admin --prefix backend"
