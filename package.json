@@ -1,0 +1,23 @@
+{
+  "name": "helpconnect",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Root workspace runner for HelpConnect NGO Donation App",
+  "scripts": {
+    "dev": "npm run dev --prefix frontend",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "build": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend",
+    "build:frontend": "npm install --prefix frontend && npm run build --prefix frontend",
+    "test": "npm test --prefix backend && npm run lint --prefix frontend",
+    "start": "npm start --prefix backend",
+    "start:backend": "npm start --prefix backend",
+    "start:frontend": "npm run dev --prefix frontend",
+    "seed": "npm run seed --prefix backend",
+    "clean-seed": "npm run clean-seed --prefix backend",
+    "clear-data": "npm run clear-data --prefix backend",
+    "reset-and-seed": "npm run reset-and-seed --prefix backend",
+    "create-admin": "npm run create-admin --prefix backend"
+  }
+}

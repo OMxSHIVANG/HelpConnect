@@ -1,0 +1,66 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+**/node_modules/
+
+# Production builds & artifacts
+dist/
+frontend/dist/
+dist-ssr/
+build/
+*.tsbuildinfo
+
+# Environment & Secret files (Strictly blocked across all directories)
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Credentials, Keys and Certificates
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+credentials.json
+service-account*.json
+client_secret*.json
+
+# Logs & Debugging
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test Coverage
+coverage/
+.nyc_output/
+
+# OS and Editor metadata
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
